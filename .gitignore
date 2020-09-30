@@ -1,3 +1,9 @@
+# build
+build/
+
+# environnment
+.env*
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
