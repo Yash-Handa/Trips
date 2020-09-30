@@ -1,6 +1,11 @@
 #!/bin/sh
 src="cmd/server/main.go"
-env=".env"
+env=".env.dev"
+
+if [ $# -eq 1 ] && [ "$1" = "prod" ]
+then
+  env=".env.prod"
+fi
 
 printf "\nStart running: server ...\n"
 # Set all ENV vars for the server to run
