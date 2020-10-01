@@ -1,0 +1,36 @@
+type Cab {
+  id: ID!
+  type: CabType!
+  model: String!
+  workingAC: Boolean!
+  number: Int!
+  namePlate: String!
+  pic: String!
+  driver: Driver!
+}
+
+enum CabType {
+  SUV
+  Micro
+  Mini
+  Luxury
+}
+
+# Nearby cabs
+
+type NearbyCab {
+  event: NearbyCabEvent!
+  location: Location!
+}
+
+enum NearbyCabEvent {
+  ENTER
+  LEAVE
+  MOVE
+}
+
+input NearbyCabInput {
+  curLocation: LocationInput!
+  radius: Float!
+  type: CabType!
+}

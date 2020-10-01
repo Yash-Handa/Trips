@@ -1,0 +1,46 @@
+scalar Time
+
+type Trip {
+  id: ID!
+  pickup: Location!
+  destination: Location!
+  cab: Cab!
+  amount: Cash!
+  startTime: Time
+  duration: Time
+  canceled: CancelTrip
+  completed: Boolean!
+}
+
+type Location {
+  Lat: String!
+  Lon: String!
+}
+
+type Cash {
+  currency: Currency!
+  amount: Float!
+}
+
+enum Currency {
+  USD
+  INR
+  EUR
+}
+
+type CancelTrip {
+  cancel: Boolean!
+  reason: String!
+}
+
+# Input Types
+input BookTripInput {
+  pickup: LocationInput!
+  destination: LocationInput!
+  cabType: CabType!
+}
+
+input LocationInput {
+  Lat: String!
+  Lon: String!
+}

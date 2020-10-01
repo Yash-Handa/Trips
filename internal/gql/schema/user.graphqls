@@ -1,0 +1,21 @@
+# type User {
+#   id: ID!
+#   email: String!
+#   firstName: String!
+#   lastName: String
+# }
+
+# # Input Types
+# input CreateUserInput {
+#   id: ID!
+#   email: String!
+#   firstName: String!
+#   lastName: String
+# }
+
+# input UpdateUserInput {
+#   id: ID!
+#   email: String
+#   firstName: String
+#   lastName: String
+# }

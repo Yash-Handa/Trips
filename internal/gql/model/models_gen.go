@@ -2,19 +2,229 @@
 
 package model
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
+type BookTripInput struct {
+	Pickup      *LocationInput `json:"pickup"`
+	Destination *LocationInput `json:"destination"`
+	CabType     CabType        `json:"cabType"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type CancelTrip struct {
+	Cancel bool   `json:"cancel"`
+	Reason string `json:"reason"`
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type Cash struct {
+	Currency Currency `json:"currency"`
+	Amount   float64  `json:"amount"`
+}
+
+type Driver struct {
+	ID        string  `json:"id"`
+	FirstName string  `json:"firstName"`
+	LastName  *string `json:"lastName"`
+	PhoneNo   string  `json:"phoneNo"`
+	Gender    Gender  `json:"gender"`
+	Rating    float64 `json:"rating"`
+	Pic       string  `json:"pic"`
+}
+
+type Location struct {
+	Lat string `json:"Lat"`
+	Lon string `json:"Lon"`
+}
+
+type LocationInput struct {
+	Lat string `json:"Lat"`
+	Lon string `json:"Lon"`
+}
+
+type NearbyCab struct {
+	Event    NearbyCabEvent `json:"event"`
+	Location *Location      `json:"location"`
+}
+
+type NearbyCabInput struct {
+	CurLocation *LocationInput `json:"curLocation"`
+	Radius      float64        `json:"radius"`
+	Type        CabType        `json:"type"`
+}
+
+type CabType string
+
+const (
+	CabTypeSuv    CabType = "SUV"
+	CabTypeMicro  CabType = "Micro"
+	CabTypeMini   CabType = "Mini"
+	CabTypeLuxury CabType = "Luxury"
+)
+
+var AllCabType = []CabType{
+	CabTypeSuv,
+	CabTypeMicro,
+	CabTypeMini,
+	CabTypeLuxury,
+}
+
+func (e CabType) IsValid() bool {
+	switch e {
+	case CabTypeSuv, CabTypeMicro, CabTypeMini, CabTypeLuxury:
+		return true
+	}
+	return false
+}
+
+func (e CabType) String() string {
+	return string(e)
+}
+
+func (e *CabType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CabType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CabType", str)
+	}
+	return nil
+}
+
+func (e CabType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Currency string
+
+const (
+	CurrencyUsd Currency = "USD"
+	CurrencyInr Currency = "INR"
+	CurrencyEur Currency = "EUR"
+)
+
+var AllCurrency = []Currency{
+	CurrencyUsd,
+	CurrencyInr,
+	CurrencyEur,
+}
+
+func (e Currency) IsValid() bool {
+	switch e {
+	case CurrencyUsd, CurrencyInr, CurrencyEur:
+		return true
+	}
+	return false
+}
+
+func (e Currency) String() string {
+	return string(e)
+}
+
+func (e *Currency) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Currency(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Currency", str)
+	}
+	return nil
+}
+
+func (e Currency) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Gender string
+
+const (
+	GenderM Gender = "M"
+	GenderF Gender = "F"
+	GenderO Gender = "O"
+)
+
+var AllGender = []Gender{
+	GenderM,
+	GenderF,
+	GenderO,
+}
+
+func (e Gender) IsValid() bool {
+	switch e {
+	case GenderM, GenderF, GenderO:
+		return true
+	}
+	return false
+}
+
+func (e Gender) String() string {
+	return string(e)
+}
+
+func (e *Gender) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Gender(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Gender", str)
+	}
+	return nil
+}
+
+func (e Gender) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type NearbyCabEvent string
+
+const (
+	NearbyCabEventEnter NearbyCabEvent = "ENTER"
+	NearbyCabEventLeave NearbyCabEvent = "LEAVE"
+	NearbyCabEventMove  NearbyCabEvent = "MOVE"
+)
+
+var AllNearbyCabEvent = []NearbyCabEvent{
+	NearbyCabEventEnter,
+	NearbyCabEventLeave,
+	NearbyCabEventMove,
+}
+
+func (e NearbyCabEvent) IsValid() bool {
+	switch e {
+	case NearbyCabEventEnter, NearbyCabEventLeave, NearbyCabEventMove:
+		return true
+	}
+	return false
+}
+
+func (e NearbyCabEvent) String() string {
+	return string(e)
+}
+
+func (e *NearbyCabEvent) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NearbyCabEvent(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NearbyCabEvent", str)
+	}
+	return nil
+}
+
+func (e NearbyCabEvent) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

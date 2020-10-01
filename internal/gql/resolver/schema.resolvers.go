@@ -11,18 +11,28 @@ import (
 	"github.com/Yash-Handa/Trips/internal/gql/model"
 )
 
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInput) (*model.Trip, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	// panic(fmt.Errorf("not implemented"))
-	return []*model.Todo{
-		{ID: "123",
-			Text: "Yo",
-			Done: true,
-			User: nil},
-	}, nil
+func (r *mutationResolver) CancelTrip(ctx context.Context, id string, reason string) (*model.Trip, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) StartTrip(ctx context.Context, id string) (*model.Trip, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) EndTrip(ctx context.Context, id string) (*model.Trip, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Trips(ctx context.Context) ([]*model.Trip, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *subscriptionResolver) NearbyCabs(ctx context.Context, input model.NearbyCabInput) (<-chan []*model.NearbyCab, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.
@@ -31,5 +41,9 @@ func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResol
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Subscription returns generated.SubscriptionResolver implementation.
+func (r *Resolver) Subscription() generated.SubscriptionResolver { return &subscriptionResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }

@@ -15,7 +15,17 @@ func GraphqlHandler() gin.HandlerFunc {
 		Resolvers: &resolver.Resolver{},
 	}
 
+	// custom complexity calculator for query fields which return arrays of certain numbers(count)
+	countComplexity := func(childComplexity, count int) int {
+		return count * childComplexity
+	}
+	_ = countComplexity
+	// c.Complexity.Query.Users = countComplexity
+
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(c))
+
+	// add Fixed complexity to the server
+	// h.Use(extension.FixedComplexityLimit(5))
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)

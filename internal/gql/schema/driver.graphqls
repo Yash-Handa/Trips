@@ -1,0 +1,15 @@
+type Driver {
+  id: ID!
+  firstName: String!
+  lastName: String
+  phoneNo: String!
+  gender: Gender!
+  rating: Float!
+  pic: String!
+}
+
+enum Gender {
+  M
+  F
+  O
+}
