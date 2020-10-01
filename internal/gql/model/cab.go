@@ -10,4 +10,5 @@ type Cab struct {
 	NamePlate string  `json:"namePlate"`
 	Pic       string  `json:"pic"`
 	DriverID  string  `json:"driver"`
+	Available bool    `json:"available"`
 }

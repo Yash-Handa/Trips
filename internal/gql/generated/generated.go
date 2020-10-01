@@ -49,6 +49,7 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Cab struct {
+		Available func(childComplexity int) int
 		Driver    func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Model     func(childComplexity int) int
@@ -150,6 +151,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Cab.available":
+		if e.complexity.Cab.Available == nil {
+			break
+		}
+
+		return e.complexity.Cab.Available(childComplexity), true
 
 	case "Cab.driver":
 		if e.complexity.Cab.Driver == nil {
@@ -532,6 +540,7 @@ var sources = []*ast.Source{
   namePlate: String!
   pic: String!
   driver: Driver!
+  available: Boolean!
 }
 
 enum CabType {
@@ -1085,6 +1094,41 @@ func (ec *executionContext) _Cab_driver(ctx context.Context, field graphql.Colle
 	res := resTmp.(*model.Driver)
 	fc.Result = res
 	return ec.marshalNDriver2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐDriver(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Cab_available(ctx context.Context, field graphql.CollectedField, obj *model.Cab) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Cab",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Available, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CancelTrip_cancel(ctx context.Context, field graphql.CollectedField, obj *model.CancelTrip) (ret graphql.Marshaler) {
@@ -3496,6 +3540,11 @@ func (ec *executionContext) _Cab(ctx context.Context, sel ast.SelectionSet, obj 
 				}
 				return res
 			})
+		case "available":
+			out.Values[i] = ec._Cab_available(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

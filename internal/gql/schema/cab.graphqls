@@ -7,6 +7,7 @@ type Cab {
   namePlate: String!
   pic: String!
   driver: Driver!
+  available: Boolean!
 }
 
 enum CabType {

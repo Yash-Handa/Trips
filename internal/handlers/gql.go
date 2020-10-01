@@ -16,10 +16,9 @@ func GraphqlHandler() gin.HandlerFunc {
 	}
 
 	// custom complexity calculator for query fields which return arrays of certain numbers(count)
-	countComplexity := func(childComplexity, count int) int {
-		return count * childComplexity
-	}
-	_ = countComplexity
+	// countComplexity := func(childComplexity, count int) int {
+	// 	return count * childComplexity
+	// }
 	// c.Complexity.Query.Users = countComplexity
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(c))
