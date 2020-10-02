@@ -5,27 +5,28 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/Yash-Handa/Trips/internal/db"
 	"github.com/Yash-Handa/Trips/internal/gql/generated"
-	"github.com/Yash-Handa/Trips/internal/gql/model"
-	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *cabResolver) Driver(ctx context.Context, obj *model.Cab) (*model.Driver, error) {
-	d := new(model.Driver)
+func (r *cabResolver) Driver(ctx context.Context, obj *db.Cab) (*db.Driver, error) {
+	// d := new(model.Driver)
 
-	for _, v := range r.drivers {
-		if v.ID == obj.DriverID {
-			d = v
-			break
-		}
-	}
+	// for _, v := range r.drivers {
+	// 	if v.ID == obj.DriverID {
+	// 		d = v
+	// 		break
+	// 	}
+	// }
 
-	if d == nil {
-		return nil, gqlerror.Errorf("%d driver not found", obj.DriverID)
-	}
+	// if d == nil {
+	// 	return nil, gqlerror.Errorf("%d driver not found", obj.DriverID)
+	// }
 
-	return d, nil
+	// return d, nil
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Cab returns generated.CabResolver implementation.

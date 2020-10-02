@@ -5,26 +5,27 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/Yash-Handa/Trips/internal/db"
 	"github.com/Yash-Handa/Trips/internal/gql/generated"
-	"github.com/Yash-Handa/Trips/internal/gql/model"
-	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *tripResolver) Cab(ctx context.Context, obj *model.Trip) (*model.Cab, error) {
-	c := new(model.Cab)
+func (r *tripResolver) Cab(ctx context.Context, obj *db.Trip) (*db.Cab, error) {
+	// c := new(model.Cab)
 
-	// retrive cab from CabID
-	for _, v := range r.cabs {
-		if v.ID == obj.CabID {
-			c = v
-			break
-		}
-	}
-	if c == nil {
-		return nil, gqlerror.Errorf("%d cab is not available", obj.CabID)
-	}
-	return c, nil
+	// // retrive cab from CabID
+	// for _, v := range r.cabs {
+	// 	if v.ID == obj.CabID {
+	// 		c = v
+	// 		break
+	// 	}
+	// }
+	// if c == nil {
+	// 	return nil, gqlerror.Errorf("%d cab is not available", obj.CabID)
+	// }
+	// return c, nil
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Trip returns generated.TripResolver implementation.

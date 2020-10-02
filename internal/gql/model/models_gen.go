@@ -24,16 +24,6 @@ type Cash struct {
 	Amount   float64  `json:"amount"`
 }
 
-type Driver struct {
-	ID        int     `json:"id"`
-	FirstName string  `json:"firstName"`
-	LastName  *string `json:"lastName"`
-	PhoneNo   string  `json:"phoneNo"`
-	Gender    Gender  `json:"gender"`
-	Rating    float64 `json:"rating"`
-	Pic       string  `json:"pic"`
-}
-
 type Location struct {
 	Lat string `json:"Lat"`
 	Lon string `json:"Lon"`

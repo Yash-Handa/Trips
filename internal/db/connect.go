@@ -50,3 +50,8 @@ func Connect() {
 func Close() {
 	db.Close()
 }
+
+// GetDB grants access to DB
+func GetDB() *pg.DB {
+	return db
+}

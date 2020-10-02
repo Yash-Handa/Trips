@@ -7,98 +7,101 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Yash-Handa/Trips/internal/db"
 	"github.com/Yash-Handa/Trips/internal/gql/generated"
 	"github.com/Yash-Handa/Trips/internal/gql/model"
-	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInput) (*model.Trip, error) {
+func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInput) (*db.Trip, error) {
 	// a temporary data filler (drivers and cars)
-	r.FillDB()
+	// r.FillDB()
 
-	t := new(model.Trip)
-	t.ID = 1234
+	// t := new(model.Trip)
+	// t.ID = 1234
 
-	// find a suitable cab
-	for _, v := range r.cabs {
-		if v.Type == input.CabType && v.Available {
-			t.CabID = v.ID
-			v.Available = false
-			break
-		}
-	}
+	// // find a suitable cab
+	// for _, v := range r.cabs {
+	// 	if v.Type == input.CabType && v.Available {
+	// 		t.CabID = v.ID
+	// 		v.Available = false
+	// 		break
+	// 	}
+	// }
 
-	if t.CabID == 0 {
-		return nil, gqlerror.Errorf("No %s cab is available for your location", input.CabType)
-	}
+	// if t.CabID == 0 {
+	// 	return nil, gqlerror.Errorf("No %s cab is available for your location", input.CabType)
+	// }
 
-	t.Amount = &model.Cash{
-		Amount:   500.00,
-		Currency: model.Currency("INR"),
-	}
+	// t.Amount = &model.Cash{
+	// 	Amount:   500.00,
+	// 	Currency: model.Currency("INR"),
+	// }
 
-	t.Pickup = &model.Location{
-		Lat: input.Pickup.Lat,
-		Lon: input.Pickup.Lon,
-	}
+	// t.Pickup = &model.Location{
+	// 	Lat: input.Pickup.Lat,
+	// 	Lon: input.Pickup.Lon,
+	// }
 
-	t.Destination = &model.Location{
-		Lat: input.Destination.Lat,
-		Lon: input.Destination.Lon,
-	}
+	// t.Destination = &model.Location{
+	// 	Lat: input.Destination.Lat,
+	// 	Lon: input.Destination.Lon,
+	// }
 
-	t.Completed = false
+	// t.Completed = false
 
-	r.trip = append(r.trip, t)
-	return t, nil
-}
-
-func (r *mutationResolver) CancelTrip(ctx context.Context, id int, reason string) (*model.Trip, error) {
-	// a temporary data filler (drivers and cars)
-	r.FillDB()
-
-	t := new(model.Trip)
-	// find the trip data
-	found := false
-	for _, v := range r.trip {
-		if v.ID == id && v.Completed == false {
-			v.Completed = true
-			t = v
-			found = true
-			break
-		}
-	}
-
-	if found == false {
-		return nil, gqlerror.Errorf("Ether the ID %d is wrong or the trip has been completed", id)
-	}
-
-	t.Canceled = &model.CancelTrip{
-		Cancel: true,
-		Reason: reason,
-	}
-
-	// update the cab to free it
-	for _, v := range r.cabs {
-		if v.ID == t.CabID {
-			v.Available = true
-			break
-		}
-	}
-
-	return t, nil
-}
-
-func (r *mutationResolver) StartTrip(ctx context.Context, id int) (*model.Trip, error) {
+	// r.trip = append(r.trip, t)
+	// return t, nil
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) EndTrip(ctx context.Context, id int) (*model.Trip, error) {
+func (r *mutationResolver) CancelTrip(ctx context.Context, id string, reason string) (*db.Trip, error) {
+	// a temporary data filler (drivers and cars)
+	// r.FillDB()
+
+	// t := new(model.Trip)
+	// // find the trip data
+	// found := false
+	// for _, v := range r.trip {
+	// 	if v.ID == id && v.Completed == false {
+	// 		v.Completed = true
+	// 		t = v
+	// 		found = true
+	// 		break
+	// 	}
+	// }
+
+	// if found == false {
+	// 	return nil, gqlerror.Errorf("Ether the ID %d is wrong or the trip has been completed", id)
+	// }
+
+	// t.Canceled = &model.CancelTrip{
+	// 	Cancel: true,
+	// 	Reason: reason,
+	// }
+
+	// // update the cab to free it
+	// for _, v := range r.cabs {
+	// 	if v.ID == t.CabID {
+	// 		v.Available = true
+	// 		break
+	// 	}
+	// }
+
+	// return t, nil
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Trips(ctx context.Context) ([]*model.Trip, error) {
-	return r.trip, nil
+func (r *mutationResolver) StartTrip(ctx context.Context, id string) (*db.Trip, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) EndTrip(ctx context.Context, id string) (*db.Trip, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Trips(ctx context.Context) ([]*db.Trip, error) {
+	// return r.trip, nil
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *subscriptionResolver) NearbyCabs(ctx context.Context, input model.NearbyCabInput) (<-chan []*model.NearbyCab, error) {
