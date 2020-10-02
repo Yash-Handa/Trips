@@ -1,4 +1,4 @@
-package db
+package driver
 
 import (
 	"github.com/Yash-Handa/Trips/internal/gql/model"
@@ -16,7 +16,13 @@ type Driver struct {
 	Pic       string       `json:"pic" pg:",notnull"`
 }
 
-func dummyDrivers(db *pg.DB) {
+// Repo contains all Driver related functions
+type Repo struct {
+	DB *pg.DB
+}
+
+// DummyDrivers creates dummy drivers
+func DummyDrivers(db *pg.DB) {
 
 	count, err := db.Model(&Driver{}).Count()
 	if err != nil {

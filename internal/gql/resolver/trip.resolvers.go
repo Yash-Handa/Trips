@@ -5,27 +5,19 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/Yash-Handa/Trips/internal/db"
+	"github.com/Yash-Handa/Trips/internal/db/cab"
+	"github.com/Yash-Handa/Trips/internal/db/trip"
+	"github.com/Yash-Handa/Trips/internal/db/user"
 	"github.com/Yash-Handa/Trips/internal/gql/generated"
 )
 
-func (r *tripResolver) Cab(ctx context.Context, obj *db.Trip) (*db.Cab, error) {
-	// c := new(model.Cab)
+func (r *tripResolver) Cab(ctx context.Context, obj *trip.Trip) (*cab.Cab, error) {
+	return r.CabsRepo.GetCabByID(obj.CabID)
+}
 
-	// // retrive cab from CabID
-	// for _, v := range r.cabs {
-	// 	if v.ID == obj.CabID {
-	// 		c = v
-	// 		break
-	// 	}
-	// }
-	// if c == nil {
-	// 	return nil, gqlerror.Errorf("%d cab is not available", obj.CabID)
-	// }
-	// return c, nil
-	panic(fmt.Errorf("not implemented"))
+func (r *tripResolver) User(ctx context.Context, obj *trip.Trip) (*user.User, error) {
+	return r.UsersRepo.GetUserByID(obj.UserID)
 }
 
 // Trip returns generated.TripResolver implementation.

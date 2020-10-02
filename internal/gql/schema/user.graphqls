@@ -1,11 +1,13 @@
-# type User {
-#   id: ID!
-#   email: String!
-#   firstName: String!
-#   lastName: String
-# }
+type User {
+  id: ID!
+  email: String!
+  firstName: String!
+  lastName: String
 
-# # Input Types
+  trips: [Trip!]!
+}
+
+# Input Types
 # input CreateUserInput {
 #   id: ID!
 #   email: String!

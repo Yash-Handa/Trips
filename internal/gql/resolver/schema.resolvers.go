@@ -7,54 +7,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Yash-Handa/Trips/internal/db"
+	"github.com/Yash-Handa/Trips/internal/db/trip"
 	"github.com/Yash-Handa/Trips/internal/gql/generated"
 	"github.com/Yash-Handa/Trips/internal/gql/model"
 )
 
-func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInput) (*db.Trip, error) {
-	// a temporary data filler (drivers and cars)
-	// r.FillDB()
-
-	// t := new(model.Trip)
-	// t.ID = 1234
-
-	// // find a suitable cab
-	// for _, v := range r.cabs {
-	// 	if v.Type == input.CabType && v.Available {
-	// 		t.CabID = v.ID
-	// 		v.Available = false
-	// 		break
-	// 	}
-	// }
-
-	// if t.CabID == 0 {
-	// 	return nil, gqlerror.Errorf("No %s cab is available for your location", input.CabType)
-	// }
-
-	// t.Amount = &model.Cash{
-	// 	Amount:   500.00,
-	// 	Currency: model.Currency("INR"),
-	// }
-
-	// t.Pickup = &model.Location{
-	// 	Lat: input.Pickup.Lat,
-	// 	Lon: input.Pickup.Lon,
-	// }
-
-	// t.Destination = &model.Location{
-	// 	Lat: input.Destination.Lat,
-	// 	Lon: input.Destination.Lon,
-	// }
-
-	// t.Completed = false
-
-	// r.trip = append(r.trip, t)
-	// return t, nil
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInput) (*trip.Trip, error) {
+	return r.TripsRepo.BookTrip(input)
 }
 
-func (r *mutationResolver) CancelTrip(ctx context.Context, id string, reason string) (*db.Trip, error) {
+func (r *mutationResolver) CancelTrip(ctx context.Context, id string, reason string) (*trip.Trip, error) {
 	// a temporary data filler (drivers and cars)
 	// r.FillDB()
 
@@ -91,15 +53,15 @@ func (r *mutationResolver) CancelTrip(ctx context.Context, id string, reason str
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) StartTrip(ctx context.Context, id string) (*db.Trip, error) {
+func (r *mutationResolver) StartTrip(ctx context.Context, id string) (*trip.Trip, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) EndTrip(ctx context.Context, id string) (*db.Trip, error) {
+func (r *mutationResolver) EndTrip(ctx context.Context, id string) (*trip.Trip, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Trips(ctx context.Context) ([]*db.Trip, error) {
+func (r *queryResolver) Trips(ctx context.Context) ([]*trip.Trip, error) {
 	// return r.trip, nil
 	panic(fmt.Errorf("not implemented"))
 }

@@ -14,7 +14,10 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/Yash-Handa/Trips/internal/db"
+	"github.com/Yash-Handa/Trips/internal/db/cab"
+	"github.com/Yash-Handa/Trips/internal/db/driver"
+	"github.com/Yash-Handa/Trips/internal/db/trip"
+	"github.com/Yash-Handa/Trips/internal/db/user"
 	"github.com/Yash-Handa/Trips/internal/gql/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -43,6 +46,7 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	Subscription() SubscriptionResolver
 	Trip() TripResolver
+	User() UserResolver
 }
 
 type DirectiveRoot struct {
@@ -116,26 +120,40 @@ type ComplexityRoot struct {
 		ID          func(childComplexity int) int
 		Pickup      func(childComplexity int) int
 		StartTime   func(childComplexity int) int
+		User        func(childComplexity int) int
+	}
+
+	User struct {
+		Email     func(childComplexity int) int
+		FirstName func(childComplexity int) int
+		ID        func(childComplexity int) int
+		LastName  func(childComplexity int) int
+		Trips     func(childComplexity int) int
 	}
 }
 
 type CabResolver interface {
-	Driver(ctx context.Context, obj *db.Cab) (*db.Driver, error)
+	Driver(ctx context.Context, obj *cab.Cab) (*driver.Driver, error)
 }
 type MutationResolver interface {
-	BookTrip(ctx context.Context, input model.BookTripInput) (*db.Trip, error)
-	CancelTrip(ctx context.Context, id string, reason string) (*db.Trip, error)
-	StartTrip(ctx context.Context, id string) (*db.Trip, error)
-	EndTrip(ctx context.Context, id string) (*db.Trip, error)
+	BookTrip(ctx context.Context, input model.BookTripInput) (*trip.Trip, error)
+	CancelTrip(ctx context.Context, id string, reason string) (*trip.Trip, error)
+	StartTrip(ctx context.Context, id string) (*trip.Trip, error)
+	EndTrip(ctx context.Context, id string) (*trip.Trip, error)
 }
 type QueryResolver interface {
-	Trips(ctx context.Context) ([]*db.Trip, error)
+	Trips(ctx context.Context) ([]*trip.Trip, error)
 }
 type SubscriptionResolver interface {
 	NearbyCabs(ctx context.Context, input model.NearbyCabInput) (<-chan []*model.NearbyCab, error)
 }
 type TripResolver interface {
-	Cab(ctx context.Context, obj *db.Trip) (*db.Cab, error)
+	Cab(ctx context.Context, obj *trip.Trip) (*cab.Cab, error)
+
+	User(ctx context.Context, obj *trip.Trip) (*user.User, error)
+}
+type UserResolver interface {
+	Trips(ctx context.Context, obj *user.User) ([]*trip.Trip, error)
 }
 
 type executableSchema struct {
@@ -451,6 +469,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Trip.StartTime(childComplexity), true
 
+	case "Trip.user":
+		if e.complexity.Trip.User == nil {
+			break
+		}
+
+		return e.complexity.Trip.User(childComplexity), true
+
+	case "User.email":
+		if e.complexity.User.Email == nil {
+			break
+		}
+
+		return e.complexity.User.Email(childComplexity), true
+
+	case "User.firstName":
+		if e.complexity.User.FirstName == nil {
+			break
+		}
+
+		return e.complexity.User.FirstName(childComplexity), true
+
+	case "User.id":
+		if e.complexity.User.ID == nil {
+			break
+		}
+
+		return e.complexity.User.ID(childComplexity), true
+
+	case "User.lastName":
+		if e.complexity.User.LastName == nil {
+			break
+		}
+
+		return e.complexity.User.LastName(childComplexity), true
+
+	case "User.trips":
+		if e.complexity.User.Trips == nil {
+			break
+		}
+
+		return e.complexity.User.Trips(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -617,6 +677,7 @@ type Trip {
   endTime: Time
   canceled: CancelTrip
   completed: Boolean!
+  user: User!
 }
 
 type Location {
@@ -651,14 +712,16 @@ input LocationInput {
   Lat: String!
   Lon: String!
 }`, BuiltIn: false},
-	{Name: "internal/gql/schema/user.graphqls", Input: `# type User {
-#   id: ID!
-#   email: String!
-#   firstName: String!
-#   lastName: String
-# }
+	{Name: "internal/gql/schema/user.graphqls", Input: `type User {
+  id: ID!
+  email: String!
+  firstName: String!
+  lastName: String
 
-# # Input Types
+  trips: [Trip!]!
+}
+
+# Input Types
 # input CreateUserInput {
 #   id: ID!
 #   email: String!
@@ -817,7 +880,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Cab_id(ctx context.Context, field graphql.CollectedField, obj *db.Cab) (ret graphql.Marshaler) {
+func (ec *executionContext) _Cab_id(ctx context.Context, field graphql.CollectedField, obj *cab.Cab) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -852,7 +915,7 @@ func (ec *executionContext) _Cab_id(ctx context.Context, field graphql.Collected
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Cab_type(ctx context.Context, field graphql.CollectedField, obj *db.Cab) (ret graphql.Marshaler) {
+func (ec *executionContext) _Cab_type(ctx context.Context, field graphql.CollectedField, obj *cab.Cab) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -887,7 +950,7 @@ func (ec *executionContext) _Cab_type(ctx context.Context, field graphql.Collect
 	return ec.marshalNCabType2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐCabType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Cab_model(ctx context.Context, field graphql.CollectedField, obj *db.Cab) (ret graphql.Marshaler) {
+func (ec *executionContext) _Cab_model(ctx context.Context, field graphql.CollectedField, obj *cab.Cab) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -922,7 +985,7 @@ func (ec *executionContext) _Cab_model(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Cab_workingAC(ctx context.Context, field graphql.CollectedField, obj *db.Cab) (ret graphql.Marshaler) {
+func (ec *executionContext) _Cab_workingAC(ctx context.Context, field graphql.CollectedField, obj *cab.Cab) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -957,7 +1020,7 @@ func (ec *executionContext) _Cab_workingAC(ctx context.Context, field graphql.Co
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Cab_number(ctx context.Context, field graphql.CollectedField, obj *db.Cab) (ret graphql.Marshaler) {
+func (ec *executionContext) _Cab_number(ctx context.Context, field graphql.CollectedField, obj *cab.Cab) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -992,7 +1055,7 @@ func (ec *executionContext) _Cab_number(ctx context.Context, field graphql.Colle
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Cab_namePlate(ctx context.Context, field graphql.CollectedField, obj *db.Cab) (ret graphql.Marshaler) {
+func (ec *executionContext) _Cab_namePlate(ctx context.Context, field graphql.CollectedField, obj *cab.Cab) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1027,7 +1090,7 @@ func (ec *executionContext) _Cab_namePlate(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Cab_pic(ctx context.Context, field graphql.CollectedField, obj *db.Cab) (ret graphql.Marshaler) {
+func (ec *executionContext) _Cab_pic(ctx context.Context, field graphql.CollectedField, obj *cab.Cab) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1062,7 +1125,7 @@ func (ec *executionContext) _Cab_pic(ctx context.Context, field graphql.Collecte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Cab_driver(ctx context.Context, field graphql.CollectedField, obj *db.Cab) (ret graphql.Marshaler) {
+func (ec *executionContext) _Cab_driver(ctx context.Context, field graphql.CollectedField, obj *cab.Cab) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1092,12 +1155,12 @@ func (ec *executionContext) _Cab_driver(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*db.Driver)
+	res := resTmp.(*driver.Driver)
 	fc.Result = res
-	return ec.marshalNDriver2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐDriver(ctx, field.Selections, res)
+	return ec.marshalNDriver2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋdriverᚐDriver(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Cab_available(ctx context.Context, field graphql.CollectedField, obj *db.Cab) (ret graphql.Marshaler) {
+func (ec *executionContext) _Cab_available(ctx context.Context, field graphql.CollectedField, obj *cab.Cab) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1272,7 +1335,7 @@ func (ec *executionContext) _Cash_amount(ctx context.Context, field graphql.Coll
 	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Driver_id(ctx context.Context, field graphql.CollectedField, obj *db.Driver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Driver_id(ctx context.Context, field graphql.CollectedField, obj *driver.Driver) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1307,7 +1370,7 @@ func (ec *executionContext) _Driver_id(ctx context.Context, field graphql.Collec
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Driver_firstName(ctx context.Context, field graphql.CollectedField, obj *db.Driver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Driver_firstName(ctx context.Context, field graphql.CollectedField, obj *driver.Driver) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1342,7 +1405,7 @@ func (ec *executionContext) _Driver_firstName(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Driver_lastName(ctx context.Context, field graphql.CollectedField, obj *db.Driver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Driver_lastName(ctx context.Context, field graphql.CollectedField, obj *driver.Driver) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1374,7 +1437,7 @@ func (ec *executionContext) _Driver_lastName(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Driver_phoneNo(ctx context.Context, field graphql.CollectedField, obj *db.Driver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Driver_phoneNo(ctx context.Context, field graphql.CollectedField, obj *driver.Driver) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1409,7 +1472,7 @@ func (ec *executionContext) _Driver_phoneNo(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Driver_gender(ctx context.Context, field graphql.CollectedField, obj *db.Driver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Driver_gender(ctx context.Context, field graphql.CollectedField, obj *driver.Driver) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1444,7 +1507,7 @@ func (ec *executionContext) _Driver_gender(ctx context.Context, field graphql.Co
 	return ec.marshalNGender2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐGender(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Driver_rating(ctx context.Context, field graphql.CollectedField, obj *db.Driver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Driver_rating(ctx context.Context, field graphql.CollectedField, obj *driver.Driver) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1479,7 +1542,7 @@ func (ec *executionContext) _Driver_rating(ctx context.Context, field graphql.Co
 	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Driver_pic(ctx context.Context, field graphql.CollectedField, obj *db.Driver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Driver_pic(ctx context.Context, field graphql.CollectedField, obj *driver.Driver) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1621,9 +1684,9 @@ func (ec *executionContext) _Mutation_bookTrip(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*db.Trip)
+	res := resTmp.(*trip.Trip)
 	fc.Result = res
-	return ec.marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐTrip(ctx, field.Selections, res)
+	return ec.marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTrip(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_cancelTrip(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1663,9 +1726,9 @@ func (ec *executionContext) _Mutation_cancelTrip(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*db.Trip)
+	res := resTmp.(*trip.Trip)
 	fc.Result = res
-	return ec.marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐTrip(ctx, field.Selections, res)
+	return ec.marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTrip(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_startTrip(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1705,9 +1768,9 @@ func (ec *executionContext) _Mutation_startTrip(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*db.Trip)
+	res := resTmp.(*trip.Trip)
 	fc.Result = res
-	return ec.marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐTrip(ctx, field.Selections, res)
+	return ec.marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTrip(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_endTrip(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1747,9 +1810,9 @@ func (ec *executionContext) _Mutation_endTrip(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*db.Trip)
+	res := resTmp.(*trip.Trip)
 	fc.Result = res
-	return ec.marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐTrip(ctx, field.Selections, res)
+	return ec.marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTrip(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _NearbyCab_event(ctx context.Context, field graphql.CollectedField, obj *model.NearbyCab) (ret graphql.Marshaler) {
@@ -1852,9 +1915,9 @@ func (ec *executionContext) _Query_trips(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*db.Trip)
+	res := resTmp.([]*trip.Trip)
 	fc.Result = res
-	return ec.marshalNTrip2ᚕᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐTripᚄ(ctx, field.Selections, res)
+	return ec.marshalNTrip2ᚕᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTripᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1980,7 +2043,7 @@ func (ec *executionContext) _Subscription_nearbyCabs(ctx context.Context, field 
 	}
 }
 
-func (ec *executionContext) _Trip_id(ctx context.Context, field graphql.CollectedField, obj *db.Trip) (ret graphql.Marshaler) {
+func (ec *executionContext) _Trip_id(ctx context.Context, field graphql.CollectedField, obj *trip.Trip) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2015,7 +2078,7 @@ func (ec *executionContext) _Trip_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Trip_pickup(ctx context.Context, field graphql.CollectedField, obj *db.Trip) (ret graphql.Marshaler) {
+func (ec *executionContext) _Trip_pickup(ctx context.Context, field graphql.CollectedField, obj *trip.Trip) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2050,7 +2113,7 @@ func (ec *executionContext) _Trip_pickup(ctx context.Context, field graphql.Coll
 	return ec.marshalNLocation2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐLocation(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Trip_destination(ctx context.Context, field graphql.CollectedField, obj *db.Trip) (ret graphql.Marshaler) {
+func (ec *executionContext) _Trip_destination(ctx context.Context, field graphql.CollectedField, obj *trip.Trip) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2085,7 +2148,7 @@ func (ec *executionContext) _Trip_destination(ctx context.Context, field graphql
 	return ec.marshalNLocation2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐLocation(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Trip_cab(ctx context.Context, field graphql.CollectedField, obj *db.Trip) (ret graphql.Marshaler) {
+func (ec *executionContext) _Trip_cab(ctx context.Context, field graphql.CollectedField, obj *trip.Trip) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2115,12 +2178,12 @@ func (ec *executionContext) _Trip_cab(ctx context.Context, field graphql.Collect
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*db.Cab)
+	res := resTmp.(*cab.Cab)
 	fc.Result = res
-	return ec.marshalNCab2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐCab(ctx, field.Selections, res)
+	return ec.marshalNCab2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋcabᚐCab(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Trip_amount(ctx context.Context, field graphql.CollectedField, obj *db.Trip) (ret graphql.Marshaler) {
+func (ec *executionContext) _Trip_amount(ctx context.Context, field graphql.CollectedField, obj *trip.Trip) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2155,7 +2218,7 @@ func (ec *executionContext) _Trip_amount(ctx context.Context, field graphql.Coll
 	return ec.marshalNCash2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐCash(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Trip_startTime(ctx context.Context, field graphql.CollectedField, obj *db.Trip) (ret graphql.Marshaler) {
+func (ec *executionContext) _Trip_startTime(ctx context.Context, field graphql.CollectedField, obj *trip.Trip) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2187,7 +2250,7 @@ func (ec *executionContext) _Trip_startTime(ctx context.Context, field graphql.C
 	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Trip_endTime(ctx context.Context, field graphql.CollectedField, obj *db.Trip) (ret graphql.Marshaler) {
+func (ec *executionContext) _Trip_endTime(ctx context.Context, field graphql.CollectedField, obj *trip.Trip) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2219,7 +2282,7 @@ func (ec *executionContext) _Trip_endTime(ctx context.Context, field graphql.Col
 	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Trip_canceled(ctx context.Context, field graphql.CollectedField, obj *db.Trip) (ret graphql.Marshaler) {
+func (ec *executionContext) _Trip_canceled(ctx context.Context, field graphql.CollectedField, obj *trip.Trip) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2251,7 +2314,7 @@ func (ec *executionContext) _Trip_canceled(ctx context.Context, field graphql.Co
 	return ec.marshalOCancelTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐCancelTrip(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Trip_completed(ctx context.Context, field graphql.CollectedField, obj *db.Trip) (ret graphql.Marshaler) {
+func (ec *executionContext) _Trip_completed(ctx context.Context, field graphql.CollectedField, obj *trip.Trip) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2284,6 +2347,213 @@ func (ec *executionContext) _Trip_completed(ctx context.Context, field graphql.C
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Trip_user(ctx context.Context, field graphql.CollectedField, obj *trip.Trip) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Trip",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Trip().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*user.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋuserᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Email, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_firstName(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FirstName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_lastName(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LastName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_trips(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Trips(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*trip.Trip)
+	fc.Result = res
+	return ec.marshalNTrip2ᚕᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTripᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -3483,7 +3753,7 @@ func (ec *executionContext) unmarshalInputNearbyCabInput(ctx context.Context, ob
 
 var cabImplementors = []string{"Cab"}
 
-func (ec *executionContext) _Cab(ctx context.Context, sel ast.SelectionSet, obj *db.Cab) graphql.Marshaler {
+func (ec *executionContext) _Cab(ctx context.Context, sel ast.SelectionSet, obj *cab.Cab) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, cabImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -3623,7 +3893,7 @@ func (ec *executionContext) _Cash(ctx context.Context, sel ast.SelectionSet, obj
 
 var driverImplementors = []string{"Driver"}
 
-func (ec *executionContext) _Driver(ctx context.Context, sel ast.SelectionSet, obj *db.Driver) graphql.Marshaler {
+func (ec *executionContext) _Driver(ctx context.Context, sel ast.SelectionSet, obj *driver.Driver) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, driverImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -3851,7 +4121,7 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 
 var tripImplementors = []string{"Trip"}
 
-func (ec *executionContext) _Trip(ctx context.Context, sel ast.SelectionSet, obj *db.Trip) graphql.Marshaler {
+func (ec *executionContext) _Trip(ctx context.Context, sel ast.SelectionSet, obj *trip.Trip) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, tripImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -3905,6 +4175,73 @@ func (ec *executionContext) _Trip(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "user":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Trip_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var userImplementors = []string{"User"}
+
+func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *user.User) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("User")
+		case "id":
+			out.Values[i] = ec._User_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "email":
+			out.Values[i] = ec._User_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "firstName":
+			out.Values[i] = ec._User_firstName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "lastName":
+			out.Values[i] = ec._User_lastName(ctx, field, obj)
+		case "trips":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_trips(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4181,11 +4518,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNCab2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐCab(ctx context.Context, sel ast.SelectionSet, v db.Cab) graphql.Marshaler {
+func (ec *executionContext) marshalNCab2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋcabᚐCab(ctx context.Context, sel ast.SelectionSet, v cab.Cab) graphql.Marshaler {
 	return ec._Cab(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCab2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐCab(ctx context.Context, sel ast.SelectionSet, v *db.Cab) graphql.Marshaler {
+func (ec *executionContext) marshalNCab2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋcabᚐCab(ctx context.Context, sel ast.SelectionSet, v *cab.Cab) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4225,11 +4562,11 @@ func (ec *executionContext) marshalNCurrency2githubᚗcomᚋYashᚑHandaᚋTrips
 	return v
 }
 
-func (ec *executionContext) marshalNDriver2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐDriver(ctx context.Context, sel ast.SelectionSet, v db.Driver) graphql.Marshaler {
+func (ec *executionContext) marshalNDriver2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋdriverᚐDriver(ctx context.Context, sel ast.SelectionSet, v driver.Driver) graphql.Marshaler {
 	return ec._Driver(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNDriver2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐDriver(ctx context.Context, sel ast.SelectionSet, v *db.Driver) graphql.Marshaler {
+func (ec *executionContext) marshalNDriver2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋdriverᚐDriver(ctx context.Context, sel ast.SelectionSet, v *driver.Driver) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4386,11 +4723,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNTrip2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐTrip(ctx context.Context, sel ast.SelectionSet, v db.Trip) graphql.Marshaler {
+func (ec *executionContext) marshalNTrip2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTrip(ctx context.Context, sel ast.SelectionSet, v trip.Trip) graphql.Marshaler {
 	return ec._Trip(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTrip2ᚕᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐTripᚄ(ctx context.Context, sel ast.SelectionSet, v []*db.Trip) graphql.Marshaler {
+func (ec *executionContext) marshalNTrip2ᚕᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTripᚄ(ctx context.Context, sel ast.SelectionSet, v []*trip.Trip) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4414,7 +4751,7 @@ func (ec *executionContext) marshalNTrip2ᚕᚖgithubᚗcomᚋYashᚑHandaᚋTri
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐTrip(ctx, sel, v[i])
+			ret[i] = ec.marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTrip(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4427,7 +4764,7 @@ func (ec *executionContext) marshalNTrip2ᚕᚖgithubᚗcomᚋYashᚑHandaᚋTri
 	return ret
 }
 
-func (ec *executionContext) marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚐTrip(ctx context.Context, sel ast.SelectionSet, v *db.Trip) graphql.Marshaler {
+func (ec *executionContext) marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTrip(ctx context.Context, sel ast.SelectionSet, v *trip.Trip) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4435,6 +4772,20 @@ func (ec *executionContext) marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTrips�
 		return graphql.Null
 	}
 	return ec._Trip(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋuserᚐUser(ctx context.Context, sel ast.SelectionSet, v user.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋuserᚐUser(ctx context.Context, sel ast.SelectionSet, v *user.User) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

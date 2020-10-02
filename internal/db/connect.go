@@ -10,7 +10,7 @@ import (
 var (
 	host   string
 	port   string
-	user   string
+	usr   string
 	pass   string
 	dbName string
 )
@@ -18,7 +18,7 @@ var (
 func init() {
 	host = utils.MustGet("POSTGRES_HOST")
 	port = utils.MustGet("POSTGRES_PORT")
-	user = utils.MustGet("POSTGRES_USER")
+	usr = utils.MustGet("POSTGRES_USER")
 	pass = utils.MustGet("POSTGRES_PASSWORD")
 	dbName = utils.MustGet("POSTGRES_USER")
 }
@@ -29,7 +29,7 @@ var db *pg.DB
 func Connect() {
 	db = pg.Connect(&pg.Options{
 		Addr:     host + ":" + port,
-		User:     user,
+		User:     usr,
 		Password: pass,
 		Database: dbName,
 	})

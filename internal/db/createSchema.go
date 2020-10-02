@@ -1,15 +1,20 @@
 package db
 
 import (
+	"github.com/Yash-Handa/Trips/internal/db/cab"
+	"github.com/Yash-Handa/Trips/internal/db/driver"
+	"github.com/Yash-Handa/Trips/internal/db/trip"
+	"github.com/Yash-Handa/Trips/internal/db/user"
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
 )
 
 func createSchema(db *pg.DB) error {
 	models := []interface{}{
-		(*Cab)(nil),
-		(*Trip)(nil),
-		(*Driver)(nil),
+		(*cab.Cab)(nil),
+		(*trip.Trip)(nil),
+		(*driver.Driver)(nil),
+		(*user.User)(nil),
 	}
 
 	for _, model := range models {
@@ -22,7 +27,8 @@ func createSchema(db *pg.DB) error {
 	}
 
 	// add dummy data to drivers and cabs table
-	dummyCabs(db)
-	dummyDrivers(db)
+	cab.DummyCabs(db)
+	driver.DummyDrivers(db)
+	user.DummyUsers(db)
 	return nil
 }

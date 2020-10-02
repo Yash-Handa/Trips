@@ -1,4 +1,4 @@
-package db
+package cab
 
 import (
 	"github.com/Yash-Handa/Trips/internal/gql/model"
@@ -15,10 +15,16 @@ type Cab struct {
 	NamePlate string        `json:"namePlate" pg:",unique,notnull"`
 	Pic       string        `json:"pic" pg:",notnull"`
 	DriverID  string        `json:"driver" pg:"type:uuid,unique,notnull"`
-	Available bool          `json:"available" pg:",notnull"`
+	Available bool          `json:"available" pg:",use_zero,notnull"`
 }
 
-func dummyCabs(db *pg.DB) {
+// Repo contains all Cab related functions
+type Repo struct {
+	DB *pg.DB
+}
+
+// DummyCabs creates dummy cabs
+func DummyCabs(db *pg.DB) {
 
 	count, err := db.Model(&Cab{}).Count()
 	if err != nil {
