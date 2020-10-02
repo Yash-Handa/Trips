@@ -22,7 +22,7 @@ func (r *cabResolver) Driver(ctx context.Context, obj *model.Cab) (*model.Driver
 	}
 
 	if d == nil {
-		return nil, gqlerror.Errorf("%s driver not found", obj.DriverID)
+		return nil, gqlerror.Errorf("%d driver not found", obj.DriverID)
 	}
 
 	return d, nil

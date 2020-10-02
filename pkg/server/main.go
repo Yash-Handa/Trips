@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 
+	"github.com/Yash-Handa/Trips/internal/db"
 	"github.com/Yash-Handa/Trips/internal/handlers"
 	"github.com/Yash-Handa/Trips/internal/middlewares"
 	"github.com/Yash-Handa/Trips/pkg/utils"
@@ -21,6 +22,10 @@ func init() {
 
 // Run web server
 func Run() {
+	// connect to db
+	db.Connect()
+	defer db.Close()
+
 	r := gin.Default()
 
 	// middlewares on global router

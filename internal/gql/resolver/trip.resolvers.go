@@ -22,7 +22,7 @@ func (r *tripResolver) Cab(ctx context.Context, obj *model.Trip) (*model.Cab, er
 		}
 	}
 	if c == nil {
-		return nil, gqlerror.Errorf("%s cab is not available", obj.CabID)
+		return nil, gqlerror.Errorf("%d cab is not available", obj.CabID)
 	}
 	return c, nil
 }

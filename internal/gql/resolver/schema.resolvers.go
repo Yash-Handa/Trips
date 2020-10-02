@@ -17,7 +17,7 @@ func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInp
 	r.FillDB()
 
 	t := new(model.Trip)
-	t.ID = "1234"
+	t.ID = 1234
 
 	// find a suitable cab
 	for _, v := range r.cabs {
@@ -28,7 +28,7 @@ func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInp
 		}
 	}
 
-	if t.CabID == "" {
+	if t.CabID == 0 {
 		return nil, gqlerror.Errorf("No %s cab is available for your location", input.CabType)
 	}
 
@@ -53,7 +53,7 @@ func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInp
 	return t, nil
 }
 
-func (r *mutationResolver) CancelTrip(ctx context.Context, id string, reason string) (*model.Trip, error) {
+func (r *mutationResolver) CancelTrip(ctx context.Context, id int, reason string) (*model.Trip, error) {
 	// a temporary data filler (drivers and cars)
 	r.FillDB()
 
@@ -70,7 +70,7 @@ func (r *mutationResolver) CancelTrip(ctx context.Context, id string, reason str
 	}
 
 	if found == false {
-		return nil, gqlerror.Errorf("Ether the ID %s is wrong or the trip has been completed", id)
+		return nil, gqlerror.Errorf("Ether the ID %d is wrong or the trip has been completed", id)
 	}
 
 	t.Canceled = &model.CancelTrip{
@@ -89,11 +89,11 @@ func (r *mutationResolver) CancelTrip(ctx context.Context, id string, reason str
 	return t, nil
 }
 
-func (r *mutationResolver) StartTrip(ctx context.Context, id string) (*model.Trip, error) {
+func (r *mutationResolver) StartTrip(ctx context.Context, id int) (*model.Trip, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) EndTrip(ctx context.Context, id string) (*model.Trip, error) {
+func (r *mutationResolver) EndTrip(ctx context.Context, id int) (*model.Trip, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

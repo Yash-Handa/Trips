@@ -87,9 +87,9 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		BookTrip   func(childComplexity int, input model.BookTripInput) int
-		CancelTrip func(childComplexity int, id string, reason string) int
-		EndTrip    func(childComplexity int, id string) int
-		StartTrip  func(childComplexity int, id string) int
+		CancelTrip func(childComplexity int, id int, reason string) int
+		EndTrip    func(childComplexity int, id int) int
+		StartTrip  func(childComplexity int, id int) int
 	}
 
 	NearbyCab struct {
@@ -111,7 +111,7 @@ type ComplexityRoot struct {
 		Canceled    func(childComplexity int) int
 		Completed   func(childComplexity int) int
 		Destination func(childComplexity int) int
-		Duration    func(childComplexity int) int
+		EndTime     func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Pickup      func(childComplexity int) int
 		StartTime   func(childComplexity int) int
@@ -123,9 +123,9 @@ type CabResolver interface {
 }
 type MutationResolver interface {
 	BookTrip(ctx context.Context, input model.BookTripInput) (*model.Trip, error)
-	CancelTrip(ctx context.Context, id string, reason string) (*model.Trip, error)
-	StartTrip(ctx context.Context, id string) (*model.Trip, error)
-	EndTrip(ctx context.Context, id string) (*model.Trip, error)
+	CancelTrip(ctx context.Context, id int, reason string) (*model.Trip, error)
+	StartTrip(ctx context.Context, id int) (*model.Trip, error)
+	EndTrip(ctx context.Context, id int) (*model.Trip, error)
 }
 type QueryResolver interface {
 	Trips(ctx context.Context) ([]*model.Trip, error)
@@ -328,7 +328,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CancelTrip(childComplexity, args["id"].(string), args["reason"].(string)), true
+		return e.complexity.Mutation.CancelTrip(childComplexity, args["id"].(int), args["reason"].(string)), true
 
 	case "Mutation.endTrip":
 		if e.complexity.Mutation.EndTrip == nil {
@@ -340,7 +340,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.EndTrip(childComplexity, args["id"].(string)), true
+		return e.complexity.Mutation.EndTrip(childComplexity, args["id"].(int)), true
 
 	case "Mutation.startTrip":
 		if e.complexity.Mutation.StartTrip == nil {
@@ -352,7 +352,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.StartTrip(childComplexity, args["id"].(string)), true
+		return e.complexity.Mutation.StartTrip(childComplexity, args["id"].(int)), true
 
 	case "NearbyCab.event":
 		if e.complexity.NearbyCab.Event == nil {
@@ -422,12 +422,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Trip.Destination(childComplexity), true
 
-	case "Trip.duration":
-		if e.complexity.Trip.Duration == nil {
+	case "Trip.endTime":
+		if e.complexity.Trip.EndTime == nil {
 			break
 		}
 
-		return e.complexity.Trip.Duration(childComplexity), true
+		return e.complexity.Trip.EndTime(childComplexity), true
 
 	case "Trip.id":
 		if e.complexity.Trip.ID == nil {
@@ -613,7 +613,7 @@ type Trip {
   cab: Cab!
   amount: Cash!
   startTime: Time
-  duration: Time
+  endTime: Time
   canceled: CancelTrip
   completed: Boolean!
 }
@@ -697,10 +697,10 @@ func (ec *executionContext) field_Mutation_bookTrip_args(ctx context.Context, ra
 func (ec *executionContext) field_Mutation_cancelTrip_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 int
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -721,10 +721,10 @@ func (ec *executionContext) field_Mutation_cancelTrip_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_endTrip_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 int
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -736,10 +736,10 @@ func (ec *executionContext) field_Mutation_endTrip_args(ctx context.Context, raw
 func (ec *executionContext) field_Mutation_startTrip_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 int
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -846,9 +846,9 @@ func (ec *executionContext) _Cab_id(ctx context.Context, field graphql.Collected
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Cab_type(ctx context.Context, field graphql.CollectedField, obj *model.Cab) (ret graphql.Marshaler) {
@@ -1301,9 +1301,9 @@ func (ec *executionContext) _Driver_id(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Driver_firstName(ctx context.Context, field graphql.CollectedField, obj *model.Driver) (ret graphql.Marshaler) {
@@ -1650,7 +1650,7 @@ func (ec *executionContext) _Mutation_cancelTrip(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CancelTrip(rctx, args["id"].(string), args["reason"].(string))
+		return ec.resolvers.Mutation().CancelTrip(rctx, args["id"].(int), args["reason"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1692,7 +1692,7 @@ func (ec *executionContext) _Mutation_startTrip(ctx context.Context, field graph
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().StartTrip(rctx, args["id"].(string))
+		return ec.resolvers.Mutation().StartTrip(rctx, args["id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1734,7 +1734,7 @@ func (ec *executionContext) _Mutation_endTrip(ctx context.Context, field graphql
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().EndTrip(rctx, args["id"].(string))
+		return ec.resolvers.Mutation().EndTrip(rctx, args["id"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2009,9 +2009,9 @@ func (ec *executionContext) _Trip_id(ctx context.Context, field graphql.Collecte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNID2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Trip_pickup(ctx context.Context, field graphql.CollectedField, obj *model.Trip) (ret graphql.Marshaler) {
@@ -2186,7 +2186,7 @@ func (ec *executionContext) _Trip_startTime(ctx context.Context, field graphql.C
 	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Trip_duration(ctx context.Context, field graphql.CollectedField, obj *model.Trip) (ret graphql.Marshaler) {
+func (ec *executionContext) _Trip_endTime(ctx context.Context, field graphql.CollectedField, obj *model.Trip) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2204,7 +2204,7 @@ func (ec *executionContext) _Trip_duration(ctx context.Context, field graphql.Co
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Duration, nil
+		return obj.EndTime, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3895,8 +3895,8 @@ func (ec *executionContext) _Trip(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "startTime":
 			out.Values[i] = ec._Trip_startTime(ctx, field, obj)
-		case "duration":
-			out.Values[i] = ec._Trip_duration(ctx, field, obj)
+		case "endTime":
+			out.Values[i] = ec._Trip_endTime(ctx, field, obj)
 		case "canceled":
 			out.Values[i] = ec._Trip_canceled(ctx, field, obj)
 		case "completed":
@@ -4263,13 +4263,13 @@ func (ec *executionContext) marshalNGender2githubᚗcomᚋYashᚑHandaᚋTrips�
 	return v
 }
 
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalID(v)
+func (ec *executionContext) unmarshalNID2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalIntID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
+func (ec *executionContext) marshalNID2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalIntID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")

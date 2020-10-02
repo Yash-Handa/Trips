@@ -7,7 +7,7 @@ type Trip {
   cab: Cab!
   amount: Cash!
   startTime: Time
-  duration: Time
+  endTime: Time
   canceled: CancelTrip
   completed: Boolean!
 }
