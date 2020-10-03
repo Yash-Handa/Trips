@@ -218,3 +218,48 @@ func (e *NearbyCabEvent) UnmarshalGQL(v interface{}) error {
 func (e NearbyCabEvent) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
+
+type TripsInput string
+
+const (
+	TripsInputAll       TripsInput = "ALL"
+	TripsInputCanceled  TripsInput = "CANCELED"
+	TripsInputCompleted TripsInput = "COMPLETED"
+	TripsInputActive    TripsInput = "ACTIVE"
+)
+
+var AllTripsInput = []TripsInput{
+	TripsInputAll,
+	TripsInputCanceled,
+	TripsInputCompleted,
+	TripsInputActive,
+}
+
+func (e TripsInput) IsValid() bool {
+	switch e {
+	case TripsInputAll, TripsInputCanceled, TripsInputCompleted, TripsInputActive:
+		return true
+	}
+	return false
+}
+
+func (e TripsInput) String() string {
+	return string(e)
+}
+
+func (e *TripsInput) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TripsInput(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TripsInput", str)
+	}
+	return nil
+}
+
+func (e TripsInput) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}

@@ -2,7 +2,7 @@ type Query {
   # user(id: ID!): User!
   # users: [User!]!
 
-  trips: [Trip!]!
+  trips(status: TripsInput!): [Trip!]!
 }
 
 type Mutation {

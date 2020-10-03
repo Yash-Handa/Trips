@@ -28,9 +28,9 @@ func (r *mutationResolver) EndTrip(ctx context.Context, id string) (*trip.Trip, 
 	return r.TripsRepo.EndTrip(id)
 }
 
-func (r *queryResolver) Trips(ctx context.Context) ([]*trip.Trip, error) {
+func (r *queryResolver) Trips(ctx context.Context, status model.TripsInput) ([]*trip.Trip, error) {
 	// todo add authentication for user ID
-	return r.TripsRepo.GetTripsByUser("11111111-1111-1111-1111-111111111111")
+	return r.TripsRepo.GetTripsByUser("11111111-1111-1111-1111-111111111111", status)
 }
 
 func (r *subscriptionResolver) NearbyCabs(ctx context.Context, input model.NearbyCabInput) (<-chan []*model.NearbyCab, error) {

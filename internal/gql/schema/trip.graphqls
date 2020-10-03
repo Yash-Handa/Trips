@@ -45,3 +45,10 @@ input LocationInput {
   Lat: String!
   Lon: String!
 }
+
+enum TripsInput {
+  ALL
+  CANCELED
+  COMPLETED
+  ACTIVE
+}

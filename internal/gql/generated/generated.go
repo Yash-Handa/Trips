@@ -103,7 +103,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Trips func(childComplexity int) int
+		Trips func(childComplexity int, status model.TripsInput) int
 	}
 
 	Subscription struct {
@@ -142,7 +142,7 @@ type MutationResolver interface {
 	EndTrip(ctx context.Context, id string) (*trip.Trip, error)
 }
 type QueryResolver interface {
-	Trips(ctx context.Context) ([]*trip.Trip, error)
+	Trips(ctx context.Context, status model.TripsInput) ([]*trip.Trip, error)
 }
 type SubscriptionResolver interface {
 	NearbyCabs(ctx context.Context, input model.NearbyCabInput) (<-chan []*model.NearbyCab, error)
@@ -392,7 +392,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Trips(childComplexity), true
+		args, err := ec.field_Query_trips_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Trips(childComplexity, args["status"].(model.TripsInput)), true
 
 	case "Subscription.nearbyCabs":
 		if e.complexity.Subscription.NearbyCabs == nil {
@@ -648,7 +653,7 @@ enum Gender {
   # user(id: ID!): User!
   # users: [User!]!
 
-  trips: [Trip!]!
+  trips(status: TripsInput!): [Trip!]!
 }
 
 type Mutation {
@@ -711,6 +716,13 @@ input BookTripInput {
 input LocationInput {
   Lat: String!
   Lon: String!
+}
+
+enum TripsInput {
+  ALL
+  CANCELED
+  COMPLETED
+  ACTIVE
 }`, BuiltIn: false},
 	{Name: "internal/gql/schema/user.graphqls", Input: `type User {
   id: ID!
@@ -824,6 +836,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_trips_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.TripsInput
+	if tmp, ok := rawArgs["status"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+		arg0, err = ec.unmarshalNTripsInput2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐTripsInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["status"] = arg0
 	return args, nil
 }
 
@@ -1901,9 +1928,16 @@ func (ec *executionContext) _Query_trips(ctx context.Context, field graphql.Coll
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_trips_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Trips(rctx)
+		return ec.resolvers.Query().Trips(rctx, args["status"].(model.TripsInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4772,6 +4806,16 @@ func (ec *executionContext) marshalNTrip2ᚖgithubᚗcomᚋYashᚑHandaᚋTrips�
 		return graphql.Null
 	}
 	return ec._Trip(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNTripsInput2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐTripsInput(ctx context.Context, v interface{}) (model.TripsInput, error) {
+	var res model.TripsInput
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTripsInput2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐTripsInput(ctx context.Context, sel ast.SelectionSet, v model.TripsInput) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋuserᚐUser(ctx context.Context, sel ast.SelectionSet, v user.User) graphql.Marshaler {
