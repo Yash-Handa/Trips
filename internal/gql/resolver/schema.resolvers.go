@@ -5,7 +5,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Yash-Handa/Trips/internal/db/trip"
 	"github.com/Yash-Handa/Trips/internal/gql/generated"
@@ -34,7 +33,15 @@ func (r *queryResolver) Trips(ctx context.Context, status model.TripsInput) ([]*
 }
 
 func (r *subscriptionResolver) NearbyCabs(ctx context.Context, input model.NearbyCabInput) (<-chan []*model.NearbyCab, error) {
-	panic(fmt.Errorf("not implemented"))
+	// this is just a dummy representation
+	// Basic logic:
+	// Initially all available cabs are given location in proximity of the curLocation
+	// These cabs info is send to front-end as event: ENTER
+	//
+	// then every 5 sec db is queried to check available cabs
+	// then some of those cabs (randomly) change there location
+	// those cabs info is send to frontend as event: MOVE
+	return r.CabsRepo.NearbyCabsSub(ctx,input)
 }
 
 // Mutation returns generated.MutationResolver implementation.

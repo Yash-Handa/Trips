@@ -14,8 +14,8 @@ type Trip {
 }
 
 type Location {
-  Lat: String!
-  Lon: String!
+  Lat: Float!
+  Lon: Float!
 }
 
 type Cash {
@@ -42,8 +42,8 @@ input BookTripInput {
 }
 
 input LocationInput {
-  Lat: String!
-  Lon: String!
+  Lat: Float!
+  Lon: Float!
 }
 
 enum TripsInput {

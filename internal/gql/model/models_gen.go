@@ -25,18 +25,19 @@ type Cash struct {
 }
 
 type Location struct {
-	Lat string `json:"Lat"`
-	Lon string `json:"Lon"`
+	Lat float64 `json:"Lat"`
+	Lon float64 `json:"Lon"`
 }
 
 type LocationInput struct {
-	Lat string `json:"Lat"`
-	Lon string `json:"Lon"`
+	Lat float64 `json:"Lat"`
+	Lon float64 `json:"Lon"`
 }
 
 type NearbyCab struct {
 	Event    NearbyCabEvent `json:"event"`
 	Location *Location      `json:"location"`
+	CabID    string         `json:"cabID"`
 }
 
 type NearbyCabInput struct {

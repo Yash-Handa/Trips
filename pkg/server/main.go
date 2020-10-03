@@ -38,7 +38,11 @@ func Run() {
 	if isPgEnabled {
 		r.GET("/", handlers.PlaygroundHandler("/graphql"))
 	}
-	r.POST("/graphql", handlers.GraphqlHandler(db.GetDB()))
+
+	// GraphQL Handler
+	gqlH := handlers.GraphqlHandler(db.GetDB())
+	r.GET("/graphql", gqlH)
+	r.POST("/graphql", gqlH)
 
 	log.Fatalln(r.Run(host + ":" + port))
 }

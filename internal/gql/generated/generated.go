@@ -98,6 +98,7 @@ type ComplexityRoot struct {
 	}
 
 	NearbyCab struct {
+		CabID    func(childComplexity int) int
 		Event    func(childComplexity int) int
 		Location func(childComplexity int) int
 	}
@@ -373,6 +374,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.StartTrip(childComplexity, args["id"].(string)), true
 
+	case "NearbyCab.cabID":
+		if e.complexity.NearbyCab.CabID == nil {
+			break
+		}
+
+		return e.complexity.NearbyCab.CabID(childComplexity), true
+
 	case "NearbyCab.event":
 		if e.complexity.NearbyCab.Event == nil {
 			break
@@ -621,6 +629,7 @@ enum CabType {
 type NearbyCab {
   event: NearbyCabEvent!
   location: Location!
+  cabID: ID!
 }
 
 enum NearbyCabEvent {
@@ -686,8 +695,8 @@ type Trip {
 }
 
 type Location {
-  Lat: String!
-  Lon: String!
+  Lat: Float!
+  Lon: Float!
 }
 
 type Cash {
@@ -714,8 +723,8 @@ input BookTripInput {
 }
 
 input LocationInput {
-  Lat: String!
-  Lon: String!
+  Lat: Float!
+  Lon: Float!
 }
 
 enum TripsInput {
@@ -1634,9 +1643,9 @@ func (ec *executionContext) _Location_Lat(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(float64)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Location_Lon(ctx context.Context, field graphql.CollectedField, obj *model.Location) (ret graphql.Marshaler) {
@@ -1669,9 +1678,9 @@ func (ec *executionContext) _Location_Lon(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(float64)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_bookTrip(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1910,6 +1919,41 @@ func (ec *executionContext) _NearbyCab_location(ctx context.Context, field graph
 	res := resTmp.(*model.Location)
 	fc.Result = res
 	return ec.marshalNLocation2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋgqlᚋmodelᚐLocation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NearbyCab_cabID(ctx context.Context, field graphql.CollectedField, obj *model.NearbyCab) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NearbyCab",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CabID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_trips(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3723,7 +3767,7 @@ func (ec *executionContext) unmarshalInputLocationInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Lat"))
-			it.Lat, err = ec.unmarshalNString2string(ctx, v)
+			it.Lat, err = ec.unmarshalNFloat2float64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3731,7 +3775,7 @@ func (ec *executionContext) unmarshalInputLocationInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Lon"))
-			it.Lon, err = ec.unmarshalNString2string(ctx, v)
+			it.Lon, err = ec.unmarshalNFloat2float64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4075,6 +4119,11 @@ func (ec *executionContext) _NearbyCab(ctx context.Context, sel ast.SelectionSet
 			}
 		case "location":
 			out.Values[i] = ec._NearbyCab_location(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "cabID":
+			out.Values[i] = ec._NearbyCab_cabID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

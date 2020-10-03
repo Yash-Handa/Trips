@@ -9,6 +9,14 @@ import (
 
 // BookTrip books a trip
 func (tr *Repo) BookTrip(input model.BookTripInput) (*Trip, error) {
+	if err := utils.CheckLatLon(input.Pickup.Lat, input.Pickup.Lon); err != nil {
+		return nil, gqlerror.Errorf("Error in Pickup Point: %v", err)
+	}
+
+	if err := utils.CheckLatLon(input.Destination.Lat, input.Destination.Lon); err != nil {
+		return nil, gqlerror.Errorf("Error in Destination: %v", err)
+	}
+
 	t := new(Trip)
 	t.ID = utils.GenUUID()
 
