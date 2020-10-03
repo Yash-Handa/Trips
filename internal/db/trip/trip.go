@@ -15,8 +15,8 @@ type Trip struct {
 	CabID       string            `json:"cab" pg:"type:uuid,notnull"`
 	UserID      string            `json:"user" pg:"type:uuid,notnull"`
 	Amount      *model.Cash       `json:"amount" pg:",notnull"`
-	StartTime   *time.Time        `json:"startTime"`
-	EndTime     *time.Time        `json:"duration"`
+	StartTime   *time.Time        `json:"startTime" pg:"type:timestamp"`
+	EndTime     *time.Time        `json:"endTime" pg:"type:timestamp"`
 	Canceled    *model.CancelTrip `json:"canceled"`
 	Completed   bool              `json:"completed" pg:",use_zero,notnull"`
 }

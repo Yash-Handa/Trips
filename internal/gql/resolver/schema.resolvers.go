@@ -17,53 +17,20 @@ func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInp
 }
 
 func (r *mutationResolver) CancelTrip(ctx context.Context, id string, reason string) (*trip.Trip, error) {
-	// a temporary data filler (drivers and cars)
-	// r.FillDB()
-
-	// t := new(model.Trip)
-	// // find the trip data
-	// found := false
-	// for _, v := range r.trip {
-	// 	if v.ID == id && v.Completed == false {
-	// 		v.Completed = true
-	// 		t = v
-	// 		found = true
-	// 		break
-	// 	}
-	// }
-
-	// if found == false {
-	// 	return nil, gqlerror.Errorf("Ether the ID %d is wrong or the trip has been completed", id)
-	// }
-
-	// t.Canceled = &model.CancelTrip{
-	// 	Cancel: true,
-	// 	Reason: reason,
-	// }
-
-	// // update the cab to free it
-	// for _, v := range r.cabs {
-	// 	if v.ID == t.CabID {
-	// 		v.Available = true
-	// 		break
-	// 	}
-	// }
-
-	// return t, nil
-	panic(fmt.Errorf("not implemented"))
+	return r.TripsRepo.CancelTrip(id, reason)
 }
 
 func (r *mutationResolver) StartTrip(ctx context.Context, id string) (*trip.Trip, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.TripsRepo.StartTrip(id)
 }
 
 func (r *mutationResolver) EndTrip(ctx context.Context, id string) (*trip.Trip, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.TripsRepo.EndTrip(id)
 }
 
 func (r *queryResolver) Trips(ctx context.Context) ([]*trip.Trip, error) {
-	// return r.trip, nil
-	panic(fmt.Errorf("not implemented"))
+	// todo add authentication for user ID
+	return r.TripsRepo.GetTripsByUser("11111111-1111-1111-1111-111111111111")
 }
 
 func (r *subscriptionResolver) NearbyCabs(ctx context.Context, input model.NearbyCabInput) (<-chan []*model.NearbyCab, error) {
