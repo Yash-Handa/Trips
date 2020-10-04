@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"context"
 
 	"github.com/Yash-Handa/Trips/pkg/utils"
@@ -43,8 +44,11 @@ func Connect() {
 		panic(err)
 	}
 
-	if err := createSchema(db); err != nil {
-		panic(err)
+	fmt.Println(utils.MustGet("DATABASE_URL"))
+	err = createSchema(db)
+	if err != nil {
+		fmt.Println("The err" + err.Error())
+		panic("The err" + err.Error())
 	}
 }
 

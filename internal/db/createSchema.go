@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"github.com/Yash-Handa/Trips/internal/db/cab"
 	"github.com/Yash-Handa/Trips/internal/db/driver"
 	"github.com/Yash-Handa/Trips/internal/db/trip"
@@ -17,7 +19,8 @@ func createSchema(db *pg.DB) error {
 		(*user.User)(nil),
 	}
 
-	for _, model := range models {
+	for i, model := range models {
+		fmt.Println(i)
 		err := db.Model(model).CreateTable(&orm.CreateTableOptions{
 			IfNotExists: true,
 		})
