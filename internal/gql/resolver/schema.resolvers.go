@@ -7,9 +7,14 @@ import (
 	"context"
 
 	"github.com/Yash-Handa/Trips/internal/db/trip"
+	"github.com/Yash-Handa/Trips/internal/db/user"
 	"github.com/Yash-Handa/Trips/internal/gql/generated"
 	"github.com/Yash-Handa/Trips/internal/gql/model"
 )
+
+func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInput) (*user.AuthResponse, error) {
+	return r.UsersRepo.RegisterUser(input)
+}
 
 func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInput) (*trip.Trip, error) {
 	return r.TripsRepo.BookTrip(input)
@@ -41,7 +46,7 @@ func (r *subscriptionResolver) NearbyCabs(ctx context.Context, input model.Nearb
 	// then every 5 sec db is queried to check available cabs
 	// then some of those cabs (randomly) change there location
 	// those cabs info is send to frontend as event: MOVE
-	return r.CabsRepo.NearbyCabsSub(ctx,input)
+	return r.CabsRepo.NearbyCabsSub(ctx, input)
 }
 
 // Mutation returns generated.MutationResolver implementation.

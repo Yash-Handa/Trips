@@ -7,6 +7,7 @@ import (
 	"github.com/Yash-Handa/Trips/internal/handlers"
 	"github.com/Yash-Handa/Trips/internal/middlewares"
 	"github.com/Yash-Handa/Trips/pkg/utils"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,7 +30,15 @@ func Run() {
 	r := gin.Default()
 
 	// middlewares on global router
+
+	// cors setup
+	// - config.AllowAllOrigins = true
+	// - GET,POST, PUT, HEAD methods
+	// - Credentials share disabled
+	// - Preflight requests cached for 12 hours
+	r.Use(cors.Default())
 	r.Use(middlewares.GinContextToContext())
+	r.Use(middlewares.Auth(db.GetDB()))
 
 	r.GET("/ping", handlers.Ping())
 

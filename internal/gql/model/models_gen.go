@@ -46,6 +46,14 @@ type NearbyCabInput struct {
 	Type        CabType        `json:"type"`
 }
 
+type RegisterInput struct {
+	Email           string  `json:"email"`
+	Password        string  `json:"password"`
+	ConfirmPassword string  `json:"confirmPassword"`
+	FirstName       string  `json:"firstName"`
+	LastName        *string `json:"lastName"`
+}
+
 type CabType string
 
 const (

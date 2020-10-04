@@ -3,21 +3,25 @@ type User {
   email: String!
   firstName: String!
   lastName: String
+  createdAt: Time!
 
   trips: [Trip!]!
 }
 
-# Input Types
-# input CreateUserInput {
-#   id: ID!
-#   email: String!
-#   firstName: String!
-#   lastName: String
-# }
+input RegisterInput {
+  email: String!
+  password: String!
+  confirmPassword: String!
+  firstName: String!
+  lastName: String
+}
 
-# input UpdateUserInput {
-#   id: ID!
-#   email: String
-#   firstName: String
-#   lastName: String
-# }
+type AuthToken {
+  accessToken: String!
+  expiredAt: Time!
+}
+
+type AuthResponse {
+  authToken: AuthToken!
+  user: User!
+}
