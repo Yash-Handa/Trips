@@ -8,7 +8,7 @@ import (
 )
 
 // BookTrip books a trip
-func (tr *Repo) BookTrip(input model.BookTripInput) (*Trip, error) {
+func (tr *Repo) BookTrip(uid string, input model.BookTripInput) (*Trip, error) {
 	if err := utils.CheckLatLon(input.Pickup.Lat, input.Pickup.Lon); err != nil {
 		return nil, gqlerror.Errorf("Error in Pickup Point: %v", err)
 	}
@@ -45,9 +45,7 @@ func (tr *Repo) BookTrip(input model.BookTripInput) (*Trip, error) {
 	}
 
 	t.CabID = c.ID
-
-	// Todo - add user authentication to get user from context
-	t.UserID = "11111111-1111-1111-1111-111111111111"
+	t.UserID = uid
 
 	t.Amount = &model.Cash{
 		Amount:   500.00,

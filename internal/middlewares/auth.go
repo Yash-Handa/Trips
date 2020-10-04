@@ -73,7 +73,7 @@ func parseToken(r *http.Request) (*jwt.Token, error) {
 		return t, nil
 	})
 
-	return jwtToken, fmt.Errorf("parseToken error: %v", err)
+	return jwtToken, err
 }
 
 // GetCurrentUserFromCTX will be used in Resolvers to extract cur user

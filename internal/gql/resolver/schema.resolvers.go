@@ -10,31 +10,63 @@ import (
 	"github.com/Yash-Handa/Trips/internal/db/user"
 	"github.com/Yash-Handa/Trips/internal/gql/generated"
 	"github.com/Yash-Handa/Trips/internal/gql/model"
+	"github.com/Yash-Handa/Trips/internal/middlewares"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
+
+var unAuthorized = gqlerror.Errorf("Unauthorized Access")
 
 func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInput) (*user.AuthResponse, error) {
 	return r.UsersRepo.RegisterUser(input)
 }
 
+func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*user.AuthResponse, error) {
+	return r.UsersRepo.LoginUser(input)
+}
+
 func (r *mutationResolver) BookTrip(ctx context.Context, input model.BookTripInput) (*trip.Trip, error) {
-	return r.TripsRepo.BookTrip(input)
+	u, err := middlewares.GetCurrentUserFromCTX(ctx)
+	if err != nil {
+		return nil, unAuthorized
+	}
+
+	return r.TripsRepo.BookTrip(u.ID, input)
 }
 
 func (r *mutationResolver) CancelTrip(ctx context.Context, id string, reason string) (*trip.Trip, error) {
-	return r.TripsRepo.CancelTrip(id, reason)
+	u, err := middlewares.GetCurrentUserFromCTX(ctx)
+	if err != nil {
+		return nil, unAuthorized
+	}
+
+	return r.TripsRepo.CancelTrip(id, u.ID, reason)
 }
 
 func (r *mutationResolver) StartTrip(ctx context.Context, id string) (*trip.Trip, error) {
-	return r.TripsRepo.StartTrip(id)
+	u, err := middlewares.GetCurrentUserFromCTX(ctx)
+	if err != nil {
+		return nil, unAuthorized
+	}
+
+	return r.TripsRepo.StartTrip(id, u.ID)
 }
 
 func (r *mutationResolver) EndTrip(ctx context.Context, id string) (*trip.Trip, error) {
-	return r.TripsRepo.EndTrip(id)
+	u, err := middlewares.GetCurrentUserFromCTX(ctx)
+	if err != nil {
+		return nil, unAuthorized
+	}
+
+	return r.TripsRepo.EndTrip(id, u.ID)
 }
 
 func (r *queryResolver) Trips(ctx context.Context, status model.TripsInput) ([]*trip.Trip, error) {
-	// todo add authentication for user ID
-	return r.TripsRepo.GetTripsByUser("11111111-1111-1111-1111-111111111111", status)
+	u, err := middlewares.GetCurrentUserFromCTX(ctx)
+	if err != nil {
+		return nil, unAuthorized
+	}
+
+	return r.TripsRepo.GetTripsByUser(u.ID, status)
 }
 
 func (r *subscriptionResolver) NearbyCabs(ctx context.Context, input model.NearbyCabInput) (<-chan []*model.NearbyCab, error) {

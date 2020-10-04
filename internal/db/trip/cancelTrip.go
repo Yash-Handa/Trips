@@ -7,7 +7,7 @@ import (
 )
 
 // CancelTrip cancels a non started trip
-func (tr *Repo) CancelTrip(ID string, reason string) (*Trip, error) {
+func (tr *Repo) CancelTrip(ID, uid, reason string) (*Trip, error) {
 	t := new(Trip)
 
 	err := tr.DB.Model(t).
@@ -17,6 +17,10 @@ func (tr *Repo) CancelTrip(ID string, reason string) (*Trip, error) {
 
 	if err != nil || t == nil {
 		return nil, gqlerror.Errorf("No Such trip exist")
+	}
+
+	if t.UserID != uid {
+		return nil, gqlerror.Errorf("Unauthorized Access")
 	}
 
 	if t.Completed == true {

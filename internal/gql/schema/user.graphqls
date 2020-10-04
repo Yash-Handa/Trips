@@ -16,6 +16,11 @@ input RegisterInput {
   lastName: String
 }
 
+input LoginInput {
+  email: String!
+  password: String!
+}
+
 type AuthToken {
   accessToken: String!
   expiredAt: Time!

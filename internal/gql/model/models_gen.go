@@ -34,6 +34,11 @@ type LocationInput struct {
 	Lon float64 `json:"Lon"`
 }
 
+type LoginInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type NearbyCab struct {
 	Event    NearbyCabEvent `json:"event"`
 	Location *Location      `json:"location"`

@@ -11,6 +11,7 @@ type Mutation {
   # deleteUser(id: ID!): Boolean!
 
   register(input: RegisterInput!): AuthResponse!
+  login(input: LoginInput!): AuthResponse!
 
   bookTrip(input: BookTripInput!): Trip!
   cancelTrip(id: ID!, reason: String!): Trip!
