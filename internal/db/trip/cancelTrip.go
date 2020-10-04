@@ -8,6 +8,10 @@ import (
 
 // CancelTrip cancels a non started trip
 func (tr *Repo) CancelTrip(ID, uid, reason string) (*Trip, error) {
+	// validate reason
+	if reason == "" {
+		return nil, gqlerror.Errorf("Reason cannot be an empty string")
+	}
 	t := new(Trip)
 
 	err := tr.DB.Model(t).

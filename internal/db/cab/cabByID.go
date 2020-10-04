@@ -4,6 +4,9 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
+const picPath = "/raw/assets/cabs/"
+const picExt = "jpg"
+
 // GetCabByID gets cab by id
 func (cr *Repo) GetCabByID(ID string) (*Cab, error) {
 	c := new(Cab)
@@ -11,6 +14,8 @@ func (cr *Repo) GetCabByID(ID string) (*Cab, error) {
 	if err != nil {
 		return nil, gqlerror.Errorf("cab is not available")
 	}
+
+	c.Pic = picPath + c.Pic + "." + picExt
 
 	return c, nil
 }

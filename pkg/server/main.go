@@ -40,6 +40,9 @@ func Run() {
 	r.Use(middlewares.GinContextToContext())
 	r.Use(middlewares.Auth(db.GetDB()))
 
+	// serve static files (pics of drivers and cabs)
+	r.Static("raw/assets", "./internal/assets")
+
 	r.GET("/ping", handlers.Ping())
 
 	// GraphQL handlers
