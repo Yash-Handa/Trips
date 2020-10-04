@@ -31,10 +31,6 @@ func Connect() {
 		}
 	}
 
-	if opt == nil {
-		panic("Cannot connect to db")
-	}
-
 	db = pg.Connect(opt)
 
 	// check if the db is up
@@ -44,7 +40,6 @@ func Connect() {
 		panic(err)
 	}
 
-	fmt.Println(utils.MustGet("DATABASE_URL"))
 	err = createSchema(db)
 	if err != nil {
 		fmt.Println("The err" + err.Error())

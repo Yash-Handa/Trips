@@ -22,7 +22,7 @@ func createSchema(db *pg.DB) error {
 	for i, model := range models {
 		fmt.Println(i)
 		err := db.Model(model).CreateTable(&orm.CreateTableOptions{
-			// IfNotExists: true,
+			IfNotExists: true,
 		})
 		if err != nil {
 			return err
@@ -30,7 +30,7 @@ func createSchema(db *pg.DB) error {
 	}
 
 	// add dummy data to drivers and cabs table
-	cab.DummyCabs(db)
-	driver.DummyDrivers(db)
+	// cab.DummyCabs(db)
+	// driver.DummyDrivers(db)
 	return nil
 }
