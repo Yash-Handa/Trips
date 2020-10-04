@@ -1,8 +1,6 @@
 package db
 
 import (
-	"fmt"
-
 	"github.com/Yash-Handa/Trips/internal/db/cab"
 	"github.com/Yash-Handa/Trips/internal/db/driver"
 	"github.com/Yash-Handa/Trips/internal/db/trip"
@@ -19,8 +17,7 @@ func createSchema(db *pg.DB) error {
 		(*user.User)(nil),
 	}
 
-	for i, model := range models {
-		fmt.Println(i)
+	for _, model := range models {
 		err := db.Model(model).CreateTable(&orm.CreateTableOptions{
 			IfNotExists: true,
 		})
@@ -30,7 +27,7 @@ func createSchema(db *pg.DB) error {
 	}
 
 	// add dummy data to drivers and cabs table
-	// cab.DummyCabs(db)
-	// driver.DummyDrivers(db)
+	cab.DummyCabs(db)
+	driver.DummyDrivers(db)
 	return nil
 }

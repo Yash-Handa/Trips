@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Yash-Handa/Trips/pkg/utils"
 	"github.com/go-pg/pg/v10"
@@ -42,8 +41,7 @@ func Connect() {
 
 	err = createSchema(db)
 	if err != nil {
-		fmt.Println("The err" + err.Error())
-		panic("The err" + err.Error())
+		panic(err)
 	}
 }
 
