@@ -1,15 +1,10 @@
 type Query {
-  # user(id: ID!): User!
-  # users: [User!]!
+  user: User!
 
   trips(status: TripsInput!): [Trip!]!
 }
 
 type Mutation {
-  # createUser(input: CreateUserInput!): User!
-  # updateUser(input: UpdateUserInput!): User!
-  # deleteUser(id: ID!): Boolean!
-
   register(input: RegisterInput!): AuthResponse!
   login(input: LoginInput!): AuthResponse!
 

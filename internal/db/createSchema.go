@@ -29,6 +29,5 @@ func createSchema(db *pg.DB) error {
 	// add dummy data to drivers and cabs table
 	cab.DummyCabs(db)
 	driver.DummyDrivers(db)
-	user.DummyUsers(db)
 	return nil
 }

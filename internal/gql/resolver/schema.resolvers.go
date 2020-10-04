@@ -60,6 +60,15 @@ func (r *mutationResolver) EndTrip(ctx context.Context, id string) (*trip.Trip, 
 	return r.TripsRepo.EndTrip(id, u.ID)
 }
 
+func (r *queryResolver) User(ctx context.Context) (*user.User, error) {
+	u, err := middlewares.GetCurrentUserFromCTX(ctx)
+	if err != nil {
+		return nil, unAuthorized
+	}
+
+	return r.UsersRepo.GetUserByID(u.ID)
+}
+
 func (r *queryResolver) Trips(ctx context.Context, status model.TripsInput) ([]*trip.Trip, error) {
 	u, err := middlewares.GetCurrentUserFromCTX(ctx)
 	if err != nil {

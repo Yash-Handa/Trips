@@ -12,6 +12,24 @@ import (
 
 // RegisterUser registers users
 func (ur *Repo) RegisterUser(input model.RegisterInput) (*AuthResponse, error) {
+	// verification of input
+	if !utils.EmailFormatCheck(input.Email) {
+		return nil, gqlerror.Errorf("%s is not a valid email", input.Email)
+	}
+
+	if len(input.Password) < 6 {
+		return nil, gqlerror.Errorf("Password should be more than or equal to 6 charetor")
+	}
+
+	if input.Password != input.ConfirmPassword {
+		return nil, gqlerror.Errorf("Password and Confirmed Password do not match")
+	}
+
+	if input.FirstName == "" {
+		return nil, gqlerror.Errorf("First Name Cannot be an empty string")
+	}
+
+	// verify email not taken
 	_, err := getUserByField(ur.DB, "email", input.Email)
 	if err == nil {
 		return nil, gqlerror.Errorf("Email ID; %s has already been taken", input.Email)

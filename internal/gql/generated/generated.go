@@ -46,7 +46,6 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	Subscription() SubscriptionResolver
 	Trip() TripResolver
-	User() UserResolver
 }
 
 type DirectiveRoot struct {
@@ -117,6 +116,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Trips func(childComplexity int, status model.TripsInput) int
+		User  func(childComplexity int) int
 	}
 
 	Subscription struct {
@@ -140,9 +140,7 @@ type ComplexityRoot struct {
 		CreatedAt func(childComplexity int) int
 		Email     func(childComplexity int) int
 		FirstName func(childComplexity int) int
-		ID        func(childComplexity int) int
 		LastName  func(childComplexity int) int
-		Trips     func(childComplexity int) int
 	}
 }
 
@@ -158,6 +156,7 @@ type MutationResolver interface {
 	EndTrip(ctx context.Context, id string) (*trip.Trip, error)
 }
 type QueryResolver interface {
+	User(ctx context.Context) (*user.User, error)
 	Trips(ctx context.Context, status model.TripsInput) ([]*trip.Trip, error)
 }
 type SubscriptionResolver interface {
@@ -167,9 +166,6 @@ type TripResolver interface {
 	Cab(ctx context.Context, obj *trip.Trip) (*cab.Cab, error)
 
 	User(ctx context.Context, obj *trip.Trip) (*user.User, error)
-}
-type UserResolver interface {
-	Trips(ctx context.Context, obj *user.User) ([]*trip.Trip, error)
 }
 
 type executableSchema struct {
@@ -474,6 +470,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Trips(childComplexity, args["status"].(model.TripsInput)), true
 
+	case "Query.user":
+		if e.complexity.Query.User == nil {
+			break
+		}
+
+		return e.complexity.Query.User(childComplexity), true
+
 	case "Subscription.nearbyCabs":
 		if e.complexity.Subscription.NearbyCabs == nil {
 			break
@@ -577,26 +580,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.FirstName(childComplexity), true
 
-	case "User.id":
-		if e.complexity.User.ID == nil {
-			break
-		}
-
-		return e.complexity.User.ID(childComplexity), true
-
 	case "User.lastName":
 		if e.complexity.User.LastName == nil {
 			break
 		}
 
 		return e.complexity.User.LastName(childComplexity), true
-
-	case "User.trips":
-		if e.complexity.User.Trips == nil {
-			break
-		}
-
-		return e.complexity.User.Trips(childComplexity), true
 
 	}
 	return 0, false
@@ -733,17 +722,12 @@ enum Gender {
   O
 }`, BuiltIn: false},
 	{Name: "internal/gql/schema/schema.graphqls", Input: `type Query {
-  # user(id: ID!): User!
-  # users: [User!]!
+  user: User!
 
   trips(status: TripsInput!): [Trip!]!
 }
 
 type Mutation {
-  # createUser(input: CreateUserInput!): User!
-  # updateUser(input: UpdateUserInput!): User!
-  # deleteUser(id: ID!): Boolean!
-
   register(input: RegisterInput!): AuthResponse!
   login(input: LoginInput!): AuthResponse!
 
@@ -811,13 +795,10 @@ enum TripsInput {
   ACTIVE
 }`, BuiltIn: false},
 	{Name: "internal/gql/schema/user.graphqls", Input: `type User {
-  id: ID!
   email: String!
   firstName: String!
   lastName: String
   createdAt: Time!
-
-  trips: [Trip!]!
 }
 
 input RegisterInput {
@@ -2295,6 +2276,41 @@ func (ec *executionContext) _NearbyCab_cabID(ctx context.Context, field graphql.
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_user(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().User(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*user.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋuserᚐUser(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_trips(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2801,41 +2817,6 @@ func (ec *executionContext) _Trip_user(ctx context.Context, field graphql.Collec
 	return ec.marshalNUser2ᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋuserᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2971,41 +2952,6 @@ func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.C
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _User_trips(ctx context.Context, field graphql.CollectedField, obj *user.User) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().Trips(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*trip.Trip)
-	fc.Result = res
-	return ec.marshalNTrip2ᚕᚖgithubᚗcomᚋYashᚑHandaᚋTripsᚋinternalᚋdbᚋtripᚐTripᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -4681,6 +4627,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "user":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_user(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "trips":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -4822,42 +4782,23 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("User")
-		case "id":
-			out.Values[i] = ec._User_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "email":
 			out.Values[i] = ec._User_email(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "firstName":
 			out.Values[i] = ec._User_firstName(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "lastName":
 			out.Values[i] = ec._User_lastName(ctx, field, obj)
 		case "createdAt":
 			out.Values[i] = ec._User_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
-		case "trips":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._User_trips(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

@@ -10,6 +10,15 @@ var errBadCred = gqlerror.Errorf("EmailID Password combination do not exist")
 
 // LoginUser logs in a user
 func (ur *Repo) LoginUser(input model.LoginInput) (*AuthResponse, error) {
+	// verification of input
+	if !utils.EmailFormatCheck(input.Email) {
+		return nil, gqlerror.Errorf("%s is not a valid email", input.Email)
+	}
+
+	if len(input.Password) < 6 {
+		return nil, gqlerror.Errorf("Password should be more than or equal to 6 charetor")
+	}
+
 	u, err := getUserByField(ur.DB, "email", input.Email)
 	if err != nil {
 		return nil, errBadCred

@@ -1,11 +1,8 @@
 type User {
-  id: ID!
   email: String!
   firstName: String!
   lastName: String
   createdAt: Time!
-
-  trips: [Trip!]!
 }
 
 input RegisterInput {
