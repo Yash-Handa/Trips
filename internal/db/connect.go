@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Yash-Handa/Trips/pkg/utils"
@@ -37,17 +38,17 @@ func Connect() {
 	db = pg.Connect(opt)
 
 	// check if the db is up
-	// ctx := context.Background()
-	// _, err := db.ExecContext(ctx, "SELECT 1")
-	// if err != nil {
-	// 	panic(err)
-	// }
+	ctx := context.Background()
+	_, err := db.ExecContext(ctx, "SELECT 1")
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Println(utils.MustGet("DATABASE_URL"))
-	err := createSchema(db)
+	err = createSchema(db)
 	if err != nil {
 		fmt.Println("The err" + err.Error())
-		// panic("The err" + err.Error())
+		panic("The err" + err.Error())
 	}
 }
 
