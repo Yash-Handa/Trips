@@ -1,6 +1,6 @@
 #!/bin/sh
 output="build/server"
-src="cmd/server/main.go"
+src="main.go"
 
 printf "\nBuilding: server ...\n"
 if [ $# -eq 0 ]

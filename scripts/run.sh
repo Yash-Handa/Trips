@@ -1,5 +1,5 @@
 #!/bin/sh
-src="cmd/server/main.go"
+src="main.go"
 env=".env.dev"
 status="dev"
 
