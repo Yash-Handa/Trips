@@ -7,32 +7,34 @@ import (
 	"github.com/go-pg/pg/v10"
 )
 
-var (
-	host   string
-	port   string
-	usr    string
-	pass   string
-	dbName string
-)
-
-func init() {
-	host = utils.MustGet("POSTGRES_HOST")
-	port = utils.MustGet("POSTGRES_PORT")
-	usr = utils.MustGet("POSTGRES_USER")
-	pass = utils.MustGet("POSTGRES_PASSWORD")
-	dbName = utils.MustGet("POSTGRES_USER")
-}
-
 var db *pg.DB
 
 // Connect to the database
 func Connect() {
-	db = pg.Connect(&pg.Options{
-		Addr:     host + ":" + port,
-		User:     usr,
-		Password: pass,
-		Database: dbName,
-	})
+	status := utils.MustGet("STATUS")
+	opt := new(pg.Options)
+
+	if status == "dev" {
+		opt = &pg.Options{
+			Addr:     utils.MustGet("POSTGRES_HOST") + ":" + utils.MustGet("POSTGRES_PORT"),
+			User:     utils.MustGet("POSTGRES_USER"),
+			Password: utils.MustGet("POSTGRES_PASSWORD"),
+			Database: utils.MustGet("POSTGRES_USER"),
+		}
+	} else {
+		// status is heroku and DATABASE_URL will be provided
+		var err error
+		opt, err = pg.ParseURL(utils.MustGet("DATABASE_URL"))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if opt == nil {
+		panic("Cannot connect to db")
+	}
+
+	db = pg.Connect(opt)
 
 	// check if the db is up
 	ctx := context.Background()

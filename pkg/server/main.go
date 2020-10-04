@@ -12,11 +12,10 @@ import (
 )
 
 // Server configs
-var host, port string
+var port string
 var isPgEnabled bool
 
 func init() {
-	host = utils.MustGet("HOST")
 	port = utils.MustGet("PORT")
 	isPgEnabled = utils.MustGetBool("GQL_PLAYGROUND_ENABLED")
 }
@@ -56,5 +55,5 @@ func Run() {
 	r.GET("/graphql", gqlH)
 	r.POST("/graphql", gqlH)
 
-	log.Fatalln(r.Run(host + ":" + port))
+	log.Fatalln(r.Run(":" + port))
 }

@@ -8,7 +8,7 @@ import (
 
 // User model
 type User struct {
-	ID        string    `json:"id" pg:"type:uuid,,unique,default:gen_random_uuid()"`
+	ID        string    `json:"id" pg:"type:uuid,unique,default:gen_random_uuid()"`
 	Email     string    `json:"email" pg:",unique,notnull"`
 	Password  string    `json:"password" pg:",notnull"`
 	FirstName string    `json:"firstName" pg:",notnull"`
