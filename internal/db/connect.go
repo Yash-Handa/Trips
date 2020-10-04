@@ -10,7 +10,7 @@ import (
 var (
 	host   string
 	port   string
-	usr   string
+	usr    string
 	pass   string
 	dbName string
 )
