@@ -6,11 +6,11 @@ A GraphQL-Golang backend to emulate Uber like Car booking services
 
 ## Stack
 
-**Language**: Golang v1.15.0
-**WebServer**: gin-gonic/gin v1.6.3
-**GraphQL Layer**: 99designs/gqlgen v0.13.0
-**DataBase**: PostgreSQL v13.0.0
-**DB ORM**: go-pg/pg/v10 v10.3.2
+- **Language**: Golang v1.15.0
+- **WebServer**: gin-gonic/gin v1.6.3
+- **GraphQL Layer**: 99designs/gqlgen v0.13.0
+- **DataBase**: PostgreSQL v13.0.0
+- **DB ORM**: go-pg/pg/v10 v10.3.2
 
 ## Features
 
