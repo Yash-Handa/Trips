@@ -28,6 +28,7 @@ func (cr *Repo) NearbyCabsSub(ctx context.Context, input model.NearbyCabInput) (
 			select {
 			case <-ctx.Done():
 				ticker.Stop()
+				close(ch)
 				return
 			case <-ticker.C:
 				prevIDs = IDs[:]
